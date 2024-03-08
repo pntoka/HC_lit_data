@@ -7,10 +7,11 @@ import time
 import pandas as pd
 import os
 
+
 def sem_scholar(query, pub_date, offset_number):
     """
     Function that takes a query, publication date and offset number and returns
-    a json object with the results
+    a json object with the results, searches only JournalArticle publication type
     """
     query = query.replace(" ", "+")
     offset = offset_number
@@ -51,13 +52,13 @@ def sem_scholar_2(query, pub_date, offset_number):
     count = 0
     while response.status_code != 200:
         print(
-            "Error: " + str(response.status_code) + " trying request again"
+            "Error: " + str(response.status_code) + " trying request again: Attempt " + str(count+1)
         )  # if the request is not successful, try again
-        print("This is the url: " + url)
-        time.sleep(60)
+        # print("This is the url: " + url)
+        time.sleep(90)
         response = requests.get(url)
         count += 1
-        if count == 15:
+        if count == 20:
             break
     data = response.json()  # return the response as json object
     print(f"Request successful for pub date = {pub_date} and offset = {offset_number}")
@@ -132,20 +133,19 @@ def doi_pubtype_dict(query, pub_date):
 
 def doi_dict_filter(doi_dict, pub_type, pub_skip):
     """
-    Function that takes a doi dictionary and a publication type and returns a list of DOIs that match the publication type without the publication type to skip
+    Function that takes a doi dictionary and a publication type and returns 
+    a list of DOIs that match the publication type without the publication type to skip
     """
     doi_list = []
     for doi, pub_types in doi_dict.items():
-        if pub_types == None:
+        if pub_types is None:
             doi_list.append(doi)
         elif pub_type in pub_types and pub_skip not in pub_types:
             doi_list.append(doi)
     return doi_list
 
 
-def storeDOI(
-    dois, save_dir, pub_date
-):  # Function to save list of dois for specific publication date
+def storeDOI(dois, save_dir, pub_date):  # Function to save list of dois for specific publication date
     with open(save_dir + f"doi_{pub_date}.txt", "a", encoding="utf-8") as save_file:
         for doi in dois:  # saves dois to doi.txt file with each doi on new line
             save_file.write(doi + "\n")
@@ -179,7 +179,7 @@ def doi_list_date_range_2(query, pub_dates, save_dir):
     df = pd.DataFrame(columns=["query", "pub_date", "number_of_results"])
     for pub_date in pub_dates:
         doi_dict = doi_pubtype_dict(query, pub_date)
-        if doi_dict == None:
+        if doi_dict is None:
             row = {"query": query, "pub_date": pub_date, "number_of_results": 0}
             new_df = pd.DataFrame([row])
             df = pd.concat([df, new_df], axis=0, ignore_index=True)
@@ -215,6 +215,7 @@ def doi_search(query_list, pub_dates, save_dir):
         save_dir_results = save_dir + query.replace(" ", "_") + "/"
         os.mkdir(save_dir_results)
         doi_list_date_range_2(query, pub_dates, save_dir_results)
+        time.sleep(10)
 
 
 def doi_unique(query_list, pub_dates, save_dir):
@@ -258,3 +259,19 @@ def parse_args(args):
     save_dir = args[1]
     pub_dates, query_list = parse_query(query_file)
     return pub_dates, query_list, save_dir
+
+
+def filter_dois(file, prefixes, save_dir):
+    """
+    Function to filter DOIs from a file
+    """
+    with open(os.path.join(save_dir, file), "r", encoding="utf-8") as f:
+        dois = f.read().splitlines()
+    filtered_dois = []
+    for doi in dois:
+        for prefix in prefixes:
+            if doi.startswith(prefix):
+                filtered_dois.append(doi)
+    with open(os.path.join(save_dir, "dois_select.txt"), "a", encoding="utf-8") as f:
+        for doi in filtered_dois:
+            f.write(doi + "\n")
