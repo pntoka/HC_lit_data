@@ -58,7 +58,7 @@ def sem_scholar_2(query, pub_date, offset_number):
         time.sleep(90)
         response = requests.get(url)
         count += 1
-        if count == 20:
+        if count == 30:
             break
     data = response.json()  # return the response as json object
     print(f"Request successful for pub date = {pub_date} and offset = {offset_number}")
