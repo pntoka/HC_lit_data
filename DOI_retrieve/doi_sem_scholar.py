@@ -9,7 +9,7 @@ import os
 if __name__ == '__main__':
     pub_dates, query_list, save_dir = drt.parse_args(sys.argv[1:])
     drt.doi_search(query_list, pub_dates, save_dir)
-    drt.doi_unique(query_list, pub_dates, save_dir)
+    drt.doi_unique(query_list, save_dir)
     prefixes = [
         '10.1016',
         '10.1021',
