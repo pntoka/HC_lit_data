@@ -25,14 +25,22 @@ def sem_scholar_bulk(query, pub_dates, use_token=False):
     response = requests.get(base_url, headers=headers, params=params)
     count = 0
     while response.status_code != 200:
-        print("Error: " + str(response.status_code) + " trying request again, attempt " + str(count + 1))
+        print(
+            "Error: "
+            + str(response.status_code)
+            + " trying request again, attempt "
+            + str(count + 1)
+        )
         time.sleep(30)
         response = requests.get(base_url, headers=headers, params=params)
         count += 1
         if count == 10:
             break
-    print("Request successful for pub date = {pub_dates} and query = {query}".format(
-        pub_dates=pub_dates, query=query))
+    print(
+        "Request successful for pub date = {pub_dates} and query = {query}".format(
+            pub_dates=pub_dates, query=query
+        )
+    )
     data = response.json()
     return data
 
@@ -160,10 +168,11 @@ def crossref_search(
     """
     Function to search crossref for journal article DOIs from specified prefix and publication date
     """
+    pub_date = pub_date.split("-")
     base_url = "https://api.crossref.org/prefixes/{prefix}/works"
     headers = {"Accept": "application/json"}
     params = {
-        "filter": f"from-pub-date:{pub_date},type:{pub_type}",
+        "filter": f"from-pub-date:{pub_date[0]},until-pub-date:{pub_date[1]},type:{pub_type}",
         "rows": 1000,
         "query": query,
         "select": "DOI",
@@ -175,6 +184,12 @@ def crossref_search(
         base_url.format(prefix=prefix), headers=headers, params=params
     )
     data = response.json()
+    if data["status"] == "ok":
+        print(
+            "Request successful for pub date = {pub_dates} and query = {query} and prefix = {prefix}".format(
+                pub_dates=pub_date, query=query, prefix=prefix
+            )
+        )
     return data
 
 
@@ -205,3 +220,35 @@ def crossref_search_paging(pub_date, query, prefix, pub_type="journal-article"):
                     return all_dois
                 else:
                     cursor = data["message"]["next-cursor"]
+
+
+def get_dois_crossref(query, pub_dates, save_dir):
+    """
+    Function that takes a query and pub dates and saves in a file the DOIs found
+    """
+    prefixes = [
+        "10.1016",
+        "10.1021",
+        "10.1039",
+        "10.1002",
+        "10.1007",
+        "10.1080",
+        "10.1038",
+    ]
+    doi_list_all = []
+    for prefix in prefixes:
+        doi_list = crossref_search_paging(pub_dates, query, prefix)
+        doi_list_all.extend(doi_list)
+    storeDOI(doi_list_all, save_dir)
+
+
+def doi_search_crossref(query_list, pub_dates, save_dir):
+    """
+    Function that takes a list of queries, a range of ublication dates and a directory to save the results
+    and returns a list of DOIs in a file. Results for each query are saved in a different directory
+    """
+    for query in query_list:
+        save_dir_results = save_dir + query.replace(" ", "_") + "/"
+        os.mkdir(save_dir_results)
+        get_dois_crossref(query, pub_dates, save_dir_results)
+        time.sleep(5)
