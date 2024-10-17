@@ -7,5 +7,5 @@ The details of the search query are contained in the query.toml file. The parame
 To run the search run the doi_retrieve.py file with the path of the query.toml file
 
 ```shell
-python doi_retrieve.py /PATH/TO/QUER/TOML/FILE
+python doi_retrieve.py /PATH/TO/QUERY/TOML/FILE
 ```
