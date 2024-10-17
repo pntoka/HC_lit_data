@@ -5,6 +5,7 @@ Functions to retrieve DOIs using semantic scholar API
 import requests
 import time
 import os
+import tomllib
 
 
 def sem_scholar_bulk(query, pub_dates, use_token=False):
@@ -69,6 +70,10 @@ def doi_dict_filter(doi_dict, pub_type, pub_skip):
     a list of DOIs that match the publication type without the publication type to skip
     """
     doi_list = []
+    if pub_type is None:
+        for doi in doi_dict.items():
+            doi_list.append(doi)
+        return doi_list
     for doi, pub_types in doi_dict.items():
         if pub_types is None:
             doi_list.append(doi)
@@ -78,29 +83,31 @@ def doi_dict_filter(doi_dict, pub_type, pub_skip):
 
 
 def storeDOI(dois, save_dir):  # Function to save list of dois to file
-    with open(save_dir + "doi_all.txt", "a", encoding="utf-8") as save_file:
+    with open(os.path.join(save_dir, "doi_all.txt"), "a", encoding="utf-8") as save_file:
         for doi in dois:  # saves dois to doi.txt file with each doi on new line
             save_file.write(doi + "\n")
 
 
-def get_dois_sem_sch(query, pub_dates, save_dir):
+def get_dois_sem_sch(query, pub_dates, save_dir, pub_type=None, pub_skip=None):
     """
     Function that take a query and pub dates and saves in a file the DOIs found
     """
     doi_dict = bulk_search_doi_pubtype(query, pub_dates)
-    doi_list = doi_dict_filter(doi_dict, "JournalArticle", "Review")
+    doi_list = doi_dict_filter(doi_dict, pub_type, pub_skip)
     storeDOI(doi_list, save_dir)
 
 
-def doi_search(query_list, pub_dates, save_dir):
+def doi_search(query_list, pub_dates, save_dir, pub_type=None, pub_skip=None):
     """
     Function that takes a list of queries, a range of ublication dates and a directory to save the results
     and returns a list of DOIs in a file. Results for each query are saved in a different directory
     """
     for query in query_list:
-        save_dir_results = save_dir + query.replace(" ", "_") + "/"
+        save_dir_results = os.path.join(save_dir, list(query.keys())[0])
         os.mkdir(save_dir_results)
-        get_dois_sem_sch(query, pub_dates, save_dir_results)
+        get_dois_sem_sch(list(query.values())[0], pub_dates, save_dir_results, pub_type, pub_skip)
+        with open(os.path.join(save_dir_results, f"{list(query.keys())[0]}.txt"), "w", encoding="utf-8") as f:
+            f.write(list(query.values())[0])
         time.sleep(5)
 
 
@@ -110,17 +117,17 @@ def doi_unique(query_list, save_dir):
     """
     doi_list = []
     for query in query_list:
-        folder = save_dir + query.replace(" ", "_") + "/"
+        folder = os.path.join(save_dir, list(query.keys())[0])
         if os.path.exists(folder + "doi_all.txt") is False:
             continue
         else:
-            with open(folder + "doi_all.txt", "r", encoding="utf-8") as file:
+            with open(os.path.join(folder, "doi_all.txt"), "r", encoding="utf-8") as file:
                 dois = file.read().splitlines()
             doi_list.extend(dois)
     doi_list_unique = list(
         set(doi_list)
     )  # removes duplicates and leaves only unique dois
-    with open(save_dir + "doi_unique.txt", "a", encoding="utf-8") as save_file:
+    with open(os.path.join(save_dir, "doi_unique.txt"), "a", encoding="utf-8") as save_file:
         for (
             doi
         ) in doi_list_unique:  # saves dois to doi.txt file with each doi on new line
@@ -128,12 +135,35 @@ def doi_unique(query_list, save_dir):
 
 
 def parse_query(query_file):
-    with open(query_file, "r") as file:
-        query_list = file.read().splitlines()
-    pub_dates = query_list[0].split(" ")
-    pub_dates = pub_dates[0] + "-" + pub_dates[1]
-    search_queries = query_list[1:]
-    return pub_dates, search_queries
+    with open(query_file, "rb") as file:
+        query_data = tomllib.load(file)
+    
+    pub_dates = str(query_data["pub_dates"]['start']) + "-" + str(query_data["pub_dates"]['end'])
+    search_queries = [{key: query_data["queries"][key]} for key in query_data["queries"] if key.startswith('query')]
+    # for i in range(query_numbers):
+    #     search_queries.append(query_data["queries"][f'query_{i+1}'])
+    save_dir = query_data["save_dir"]['folder_path']
+    if "pub_types" not in query_data or "pub_type" not in query_data["pub_types"]:
+        pub_type = None
+        pub_skip = None
+    pub_type = query_data["pub_types"]['pub_type']
+    pub_skip = query_data["pub_types"]['pub_skip']
+    if "prefixes" not in query_data or 'prefix_list' not in query_data["prefixes"]:
+        prefix_list = None
+    else:
+        prefix_list = query_data["prefixes"]['prefix_list']
+    if query_data["search_engine"]['crossref']:
+        engine = 'crossref'
+    elif query_data["search_engine"]['semantic_scholar']:
+        engine = 'semantic_scholar'
+    return pub_dates, search_queries, save_dir, pub_type, pub_skip, prefix_list, engine
+
+    # with open(query_file, "r") as file:
+    #     query_list = file.read().splitlines()
+    # pub_dates = query_list[0].split(" ")
+    # pub_dates = pub_dates[0] + "-" + pub_dates[1]
+    # search_queries = query_list[1:]
+    # return pub_dates, search_queries
 
 
 def parse_args(args):
@@ -141,9 +171,8 @@ def parse_args(args):
     Function to parse command line arguments
     """
     query_file = args[0]
-    save_dir = args[1]
-    pub_dates, query_list = parse_query(query_file)
-    return pub_dates, query_list, save_dir
+    pub_dates, query_list, save_dir, pub_type, pub_skip, prefix_list, engine = parse_query(query_file)
+    return pub_dates, query_list, save_dir, pub_type, pub_skip, prefix_list, engine
 
 
 def filter_dois(file, prefixes, save_dir):
@@ -247,8 +276,10 @@ def doi_search_crossref(query_list, pub_dates, save_dir):
     Function that takes a list of queries, a range of ublication dates and a directory to save the results
     and returns a list of DOIs in a file. Results for each query are saved in a different directory
     """
-    for query in query_list:
-        save_dir_results = save_dir + query.replace(" ", "_") + "/"
+    for i, query in enumerate(query_list):
+        save_dir_results = os.path.join(save_dir, f'query_{i+1}')
         os.mkdir(save_dir_results)
         get_dois_crossref(query, pub_dates, save_dir_results)
+        with open(os.path.join(save_dir_results, f"query_{i+1}.txt"), "w", encoding="utf-8") as f:
+            f.write(query)
         time.sleep(5)

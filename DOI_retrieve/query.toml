@@ -1,0 +1,67 @@
+title = 'Search query for DOI retrieval'
+
+[pub_dates]
+docstring = """
+The start and end years for the publication dates.
+"""
+
+start = 2010
+end = 2014
+
+
+[queries]
+docstring = """
+The qeuries to be searched. Queries can be added or removed by adding or removing
+query_ variable
+"""
+
+query_1 = 'hard carbon sodium ion battery'
+query_2 = 'non-graphite carbon materials'
+query_3 = 'disordered carbon materials'
+query_4 = 'hard carbons'
+query_5 = 'disordered carbons'
+query_6 = 'hard carbon anode'
+
+
+[save_dir]
+docstring = """
+The path to the folder where the results of the search will be saved
+"""
+
+folder_path = '/Users/pnt17/Library/CloudStorage/OneDrive-ImperialCollegeLondon/hard_carbon_lit_data/HC_sem_sch_test/'
+
+
+[pub_types]
+docstring = """
+The publication type to include in the results is pub_type
+The publication type to omit from the results is pub_skip
+If not interested in specific publication types delete the pub_type and pub_skip entries
+"""
+
+pub_type = 'JournalArticle'
+pub_skip = 'Review'
+
+
+[prefixes]
+docstring = """
+List of prefixes of publishers that are to be selected from the unique DOI results
+"""
+
+prefix_list = [
+    '10.1016',
+    '10.1021',
+    '10.1039',
+    '10.1002',
+    '10.1007',
+    '10.1080',
+    '10.1038'
+]
+
+
+[search_engine]
+docstring = """
+The selection of the search engine for paper search
+"""
+
+semantic_scholar = true
+crossref = false
