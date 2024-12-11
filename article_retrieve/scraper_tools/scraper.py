@@ -2,6 +2,8 @@ import os
 import requests
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 import logging
 import scraper_tools.link as link
 from scraper_tools.utils import read_doi_file, make_batches
@@ -89,6 +91,21 @@ class FullTextDownloader:
             save_file.write(page)
         driver.close()
 
+    def web_scrape_acs_rsc(self, doi, link, save_dir, service):
+        '''
+        Function download acs and rsc articles using selenium webdriver
+        Has to be done using Chrome webdriver
+        '''
+        options = webdriver.ChromeOptions()
+        options.add_argument("--remote-debugging-port=9222")
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(service=service, options=options)
+        driver.get(link)
+        driver.implicitly_wait(15)
+        page = driver.page_source.encode('utf-8')
+        with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as save_file:
+            save_file.write(page)
+
 
 def springer_scrape_html(self, doi, save_dir):
     '''
@@ -108,12 +125,14 @@ def springer_scrape_html(self, doi, save_dir):
     elif r.status_code != 200:
         print('Error: ', r.status_code, f'for {doi}')
         return False
-    
+
 
 def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
     '''
     Function to download full text articles from list of dois
     '''
+    rsc_dois = []
+    acs_dois = []
     log = setup_logger('log', save_dir)
     downloader = FullTextDownloader(PUB_PREFIX, elsevier_api_key)
     for doi in dois:
@@ -125,6 +144,10 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
             result = downloader.springer_scrape_html(doi, save_dir)
             if result is False:
                 log.info(f'Error with downloading: {doi}')
+        elif doi[:7] == PUB_PREFIX['RSC']:
+            rsc_dois.append(doi)
+        elif doi[:7] == PUB_PREFIX['ACS']:
+            acs_dois.append(doi)
         else:
             link = downloader.link_selector(doi, pdf)
             if link is not None:
@@ -132,6 +155,23 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
             if link is None:
                 print(f'No link found for {doi}')
                 log.info(f'Error with downloading: {doi}')
+    return rsc_dois, acs_dois
+
+
+def acs_rsc_article_downloader(dois, save_dir, service, pdf=False):
+    '''
+    Function to download acs and rsc articles using selenium webdriver
+    '''
+    log_acs_rsc = setup_logger('log_acs_rsc', save_dir)
+    downloader = FullTextDownloader(PUB_PREFIX, '')
+    for doi in dois:
+        if doi[:7] == PUB_PREFIX['RSC'] or doi[:7] == PUB_PREFIX['ACS']:
+            link = downloader.link_selector(doi, pdf)
+            if link is not None:
+                downloader.web_scrape_acs_rsc(doi, link, save_dir, service)
+            if link is None:
+                print(f'No link found for {doi}')
+                log_acs_rsc.info(f'Error with downloading: {doi}')
 
 
 def download_article_from_doi(file_path, save_dir, elsevier_api_key, pdf=False, batch_size=50):
@@ -140,7 +180,32 @@ def download_article_from_doi(file_path, save_dir, elsevier_api_key, pdf=False, 
     '''
     dois = read_doi_file(file_path)
     doi_batches = make_batches(dois, batch_size)
+    all_rsc_dois = []
+    all_acs_dois = []
     for i, batch in enumerate(doi_batches):
         print(f'Downloading batch {i+1} of {len(doi_batches)}')
-        article_downloader(batch, save_dir, elsevier_api_key, pdf)
+        rsc_dois, acs_dois = article_downloader(batch, save_dir, elsevier_api_key, pdf)
+        all_rsc_dois.extend(rsc_dois)
+        all_acs_dois.extend(acs_dois)
         time.sleep(10)
+    with open(os.path.join(save_dir, 'rsc_dois.txt'), 'w') as f:
+        for doi in all_rsc_dois:
+            f.write(doi + '\n')
+    with open(os.path.join(save_dir, 'acs_dois.txt'), 'w') as f:
+        for doi in all_acs_dois:
+            f.write(doi + '\n')
+    print('Finished downloading articles')
+
+
+def download_acs_rsc_from_doi(file_path, save_dir, pdf=False, batch_size=50):
+    '''
+    Function to download acs and rsc articles from a file containing rsc or asc dois
+    '''
+    dois = read_doi_file(file_path)
+    doi_batches = make_batches(dois, batch_size)
+    service = ChromeService(ChromeDriverManager().install())
+    for i, batch in enumerate(doi_batches):
+        print(f'Downloading batch {i+1} of {len(doi_batches)}')
+        acs_rsc_article_downloader(batch, save_dir, service, pdf)
+        time.sleep(10)
+    print('Finished downloading articles')

@@ -1,3 +1,5 @@
+'''Functions for selecting the correct link for each publisher'''
+
 import requests
 import re
 
