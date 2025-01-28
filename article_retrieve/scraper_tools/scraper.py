@@ -167,7 +167,7 @@ def acs_rsc_article_downloader(dois, save_dir, service, pdf=False):
     '''
     Function to download acs and rsc articles using selenium webdriver
     '''
-    log_acs_rsc = setup_logger('log_acs_rsc', save_dir)
+    log_acs_rsc = setup_logger('log_acs_rsc', os.path.join(save_dir,'acs_rsc_downloader.log'))
     downloader = FullTextDownloader(PUB_PREFIX, '')
     for doi in dois:
         if doi[:7] == PUB_PREFIX['RSC'] or doi[:7] == PUB_PREFIX['ACS']:
