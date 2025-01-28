@@ -106,25 +106,24 @@ class FullTextDownloader:
         with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as save_file:
             save_file.write(page)
 
-
-def springer_scrape_html(self, doi, save_dir):
-    '''
-    Function get page source from springer link using requests
-    '''
-    base_url = 'https://link.springer.com/article/'
-    api_url = base_url + doi
-    headers = {
-        'Accept': 'text/html',
-        'User-Agent': 'Mozilla/5.0'
-    }
-    r = requests.get(api_url, stream=True, headers=headers, timeout=30)
-    if r.status_code == 200:
-        with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as f:
-            f.write(r.content)
-        return True
-    elif r.status_code != 200:
-        print('Error: ', r.status_code, f'for {doi}')
-        return False
+    def springer_scrape_html(self, doi, save_dir):
+        '''
+        Function get page source from springer link using requests
+        '''
+        base_url = 'https://link.springer.com/article/'
+        api_url = base_url + doi
+        headers = {
+            'Accept': 'text/html',
+            'User-Agent': 'Mozilla/5.0'
+        }
+        r = requests.get(api_url, stream=True, headers=headers, timeout=30)
+        if r.status_code == 200:
+            with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as f:
+                f.write(r.content)
+            return True
+        elif r.status_code != 200:
+            print('Error: ', r.status_code, f'for {doi}')
+            return False
 
 
 def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
@@ -133,17 +132,22 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
     '''
     rsc_dois = []
     acs_dois = []
-    log = setup_logger('log', save_dir)
+    log = setup_logger('log', os.path.join(save_dir, 'article_downloader.log'))
     downloader = FullTextDownloader(PUB_PREFIX, elsevier_api_key)
     for doi in dois:
+        # print(f'Downloading: {doi}')   # for debugging, uncomment to see which doi is being downloaded
         if doi[:7] == PUB_PREFIX['Elsevier']:
             result = downloader.downloadElsevier(doi, save_dir)
             if result is False:
                 log.info(f'Error with downloading: {doi}')
+            else:
+                log.info(f'Downloaded: {doi}')
         elif doi[:7] == PUB_PREFIX['Springer']:
             result = downloader.springer_scrape_html(doi, save_dir)
             if result is False:
                 log.info(f'Error with downloading: {doi}')
+            else:
+                log.info(f'Downloaded: {doi}')
         elif doi[:7] == PUB_PREFIX['RSC']:
             rsc_dois.append(doi)
         elif doi[:7] == PUB_PREFIX['ACS']:
@@ -152,6 +156,7 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
             link = downloader.link_selector(doi, pdf)
             if link is not None:
                 downloader.web_scrape_html(doi, link, save_dir)
+                log.info(f'Downloaded: {doi}')
             if link is None:
                 print(f'No link found for {doi}')
                 log.info(f'Error with downloading: {doi}')
