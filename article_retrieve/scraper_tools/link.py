@@ -2,21 +2,62 @@
 
 import requests
 import re
+import logging
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def validate_doi(doi):
+    '''
+    Validates if DOI matches expected format:
+    - Starts with '10.'
+    - Followed by 4-9 digits (DOI manual does not set a max digits limit but in practice it is 9)
+    - Followed by '/' and additional characters
+    '''
+    doi_pattern = r'^10.\d{4,9}/[-._;()/:\w]+$'
+    return bool(re.match(doi_pattern, doi))
 
 def get_link_from_doi(doi):
     '''
-    Takes in a doi and returns the link to the article
+    Takes in a doi and returns the link to the article:
+    1. Validates DOI format
+    2. Makes API request to crossref.org
+    3. Extracts and returns unique article URLs
+    4. Handles errors and logs failures
     '''
+    if not validate_doi(doi):
+        logger.error(f"Invalid DOI format: {doi}")
+        _log_failed_doi(doi, "Invalid DOI format")
+        return None
+        
     url = 'https://api.crossref.org/works/' + doi
     headers = {'accept': 'application/json'}
-    r = requests.get(url, headers=headers)
-    if r.status_code != 200:
-        raise Exception('Error: Could not retrieve article information')   # figure out handling bad requests for doi information
-    all_links = [link['URL'] for link in r.json()['message']['link']]
-    unique_links = list(set(all_links))
-    return unique_links
+    
+    try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+        
+        all_links = [link['URL'] for link in r.json()['message']['link']]
+        unique_links = list(set(all_links))
+        return unique_links
+        
+    except requests.exceptions.HTTPError as e:
+        # Handle HTTP errors (e.g. 404, 500)
+        logger.error(f"HTTP Error for DOI {doi}: {str(e)}")
+        _log_failed_doi(doi, f"HTTP Error: {r.status_code}")
+        return None
+    except Exception as e:
+        # Handle any other errors
+        logger.error(f"Error processing DOI {doi}: {str(e)}")
+        _log_failed_doi(doi, str(e))
+        return None
 
+def _log_failed_doi(doi, reason):
+    '''Log failed DOIs to a file'''
+    with open('failed_urls.txt', 'a') as f:
+        f.write(f"DOI: {doi}, Reason: {reason}\n")
+
+# Code below is unchanged from Piotr's original code
 
 def link_checker(part, links):
     '''
