@@ -10,7 +10,7 @@ def open_chrome(chrome_path, chrome_data_dir):
         if os.name == "nt":
             subprocess.Popen(["chrome.exe"]+arguments)
         elif os.name == "posix":
-            subprocess.Popen(os.path.join(chrome_path, "Google Chrome")+arguments)
+            subprocess.Popen([os.path.join(chrome_path, 'Google Chrome')]+arguments)
         print("Chrome opened successfully.")
     except FileNotFoundError:
         print(f"The directory {chrome_path} does not exist. Please check the path.")
