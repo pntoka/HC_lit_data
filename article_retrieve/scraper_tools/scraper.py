@@ -97,7 +97,7 @@ class FullTextDownloader:
         Has to be done using Chrome webdriver
         '''
         options = webdriver.ChromeOptions()
-        options.add_argument("--remote-debugging-port=9222")
+        options.add_experimental_option("debuggerAddress", "localhost:9222")
         options.add_argument("--headless")
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(link)

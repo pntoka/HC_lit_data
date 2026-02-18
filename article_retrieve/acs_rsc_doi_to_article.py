@@ -9,7 +9,8 @@ if __name__ == '__main__':
     save_dir = ''
     file_path = ''
     chrome_path = '' # Path to Chrome executable
-    scraper_tools.utils.open_chrome(chrome_path)
+    chrome_data_dir = '' # Path to Chrome user data directory
+    scraper_tools.utils.open_chrome(chrome_path, chrome_data_dir)
     while True:
         input("Login to RSC or ACS and press Enter to continue.")
         break

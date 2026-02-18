@@ -3,14 +3,14 @@ import os
 import subprocess
 
 
-def open_chrome(chrome_path):
+def open_chrome(chrome_path, chrome_data_dir):
     try:
         os.chdir(chrome_path)
-        arguments = ["--remote-debugging-port=9222", "--no-remote"]
+        arguments = ["--remote-debugging-port=9222", f"--user-data-dir={chrome_data_dir}"]
         if os.name == "nt":
             subprocess.Popen(["chrome.exe"]+arguments)
         elif os.name == "posix":
-            subprocess.Popen(["google-chrome"]+arguments)
+            subprocess.Popen(os.path.join(chrome_path, "Google Chrome")+arguments)
         print("Chrome opened successfully.")
     except FileNotFoundError:
         print(f"The directory {chrome_path} does not exist. Please check the path.")
