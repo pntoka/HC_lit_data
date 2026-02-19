@@ -278,9 +278,9 @@ def sections_tandf(soup, list_remove):
         data_dict.append(data)
     return data_dict
 
-def sections_mdpi(soup, list_remove):
+def sections_mdpi_legacy(soup, list_remove):
     '''
-    Function to extract sections from MDPI html journals
+    Function to extract sections from old format of MDPI html journals
     '''
     main_content = soup.find('div', class_= 'html-body')
     section_1 = main_content.find('section')                #get main sections based on first section
@@ -298,8 +298,12 @@ def sections_mdpi(soup, list_remove):
             sub_sections.insert(0,sub_sections_1)
             for sub_section in sub_sections:
                 data_sub = {}
-                data_sub['name'] = sub_section.find('h4').text
-                data_sub['type'] = 'h4'
+                if sub_section.find('h3') is not None:
+                    data_sub['name'] = sub_section.find('h3').text
+                    data_sub['type'] = 'h3'
+                elif sub_section.find('h4') is not None:
+                    data_sub['name'] = sub_section.find('h4').text
+                    data_sub['type'] = 'h4'
                 data_sub['content'] = []
                 if sub_section.find('section') is not None:
                     sub_sub_sections = sub_section.find_all('section')
@@ -325,4 +329,60 @@ def sections_mdpi(soup, list_remove):
             for paragraph in paragraphs_clean:
                 data['content'].append(paragraph.text)
         data_dict.append(data)
+    return data_dict
+
+def sections_mdpi(soup, list_remove):
+    '''
+    Function to extract sections from new format of MDPI html journals
+    '''
+    main_content = soup.find('div', id='article-contents')
+    section_1 = main_content.find('div', id='html-graphical').find_next_sibling('div')
+    sections = section_1.find_next_siblings('div')
+    sections.insert(0, section_1)
+    data_dict = []
+    for section in sections:
+        section_content = section.find('section')
+        data = {}
+        data['name'] = section_content.find('h2').text
+        data['type'] = 'h2'
+        data['content'] = []
+        if section_content.find('section') is not None:
+            sub_sections_1 = section_content.find('section')
+            sub_sections = sub_sections_1.find_next_siblings('section')
+            sub_sections.insert(0, sub_sections_1)
+            for sub_section in sub_sections:
+                data_sub = {}
+                if sub_section.find('h3') is not None:
+                    data_sub['name'] = sub_section.find('h3').text
+                    data_sub['type'] = 'h3'
+                elif sub_section.find('h4') is not None:
+                    data_sub['name'] = sub_section.find('h4').text
+                    data_sub['type'] = 'h4'
+                data_sub['content'] = []
+                if sub_section.find('section') is not None:
+                    sub_sub_sections = sub_section.find_all('section')
+                    for sub_sub_section in sub_sub_sections:
+                        data_sub_sub = {}
+                        data_sub_sub['name'] = sub_sub_section.find('h4').text
+                        data_sub_sub['type'] = 'h4'
+                        data_sub_sub['content'] = []
+                        paragraphs = tools.find_paragraphs(sub_sub_section, {'name':'div', 'class':'html-p'})
+                        paragraphs_clean = tools.remove_tags_soup_list(paragraphs, list_remove)
+                        for paragraph in paragraphs_clean:
+                            data_sub_sub['content'].append(paragraph.text)
+                        data_sub['content'].append(data_sub_sub)
+                else:
+                    paragraphs = tools.find_paragraphs(sub_section, {'name':'div', 'class':'html-p'})
+                    paragraphs_clean = tools.remove_tags_soup_list(paragraphs, list_remove)
+                    for paragraph in paragraphs_clean:
+                        data_sub['content'].append(paragraph.text)
+                data['content'].append(data_sub)
+        else:
+            paragraphs = tools.find_paragraphs(section_content, {'name':'div', 'class':'html-p'})
+            paragraphs_clean = tools.remove_tags_soup_list(paragraphs, list_remove)
+            for paragraph in paragraphs_clean:
+                data['content'].append(paragraph.text)
+        data_dict.append(data)
+        if "Conclusions" in data['name']:
+            break
     return data_dict

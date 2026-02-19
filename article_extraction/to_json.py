@@ -8,8 +8,8 @@ import section_extractor
 from LimeSoup import (ElsevierSoup, RSCSoup)
 import json
 from bs4 import BeautifulSoup
-import os
 import logging
+import os
 
 def ACS_to_json(soup, doi, save_dir):
     '''
@@ -85,7 +85,10 @@ def MDPI_to_json(soup, doi, save_dir):
     Function to extract paragraphs from MDPI html journals and save as json file
     '''
     list_remove = [{'name': 'div'}]
-    sections = section_extractor.sections_mdpi(soup, list_remove)
+    if soup.find('div', id='article-contents') is not None:
+        sections = section_extractor.sections_mdpi(soup, list_remove)
+    elif soup.find('div', class_='html-body') is not None:
+        sections = section_extractor.sections_mdpi_legacy(soup, list_remove)
     title = soup.find('h1').text
     tools.create_json_data(doi, sections, title, save_dir)
     
