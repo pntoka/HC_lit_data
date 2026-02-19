@@ -201,7 +201,10 @@ def sections_frontiers(soup, list_remove):
     '''
     Function to extract sections from Frontiers html journals
     '''
+    # TODO: Update Frontiers HTML parsing as new webpage format has been implemented
+    # New webpage contains all sections in div class=ArticleContent whit div id="h1" containing abstract
     main_content = soup.find('div', class_='JournalFullText')
+    main_content = main_content.find('div', class_='JournalFullText')  # old format had two nested divs with class JournalFullText
     main_content = tools.remove_tags_soup(main_content, list_remove)
     elements = main_content.find_all(['p','h2','h3'])
     data_dict = []
