@@ -193,12 +193,14 @@ def download_article_from_doi(file_path, save_dir, elsevier_api_key, pdf=False, 
         all_rsc_dois.extend(rsc_dois)
         all_acs_dois.extend(acs_dois)
         time.sleep(10)
-    with open(os.path.join(save_dir, 'rsc_dois.txt'), 'w') as f:
-        for doi in all_rsc_dois:
-            f.write(doi + '\n')
-    with open(os.path.join(save_dir, 'acs_dois.txt'), 'w') as f:
-        for doi in all_acs_dois:
-            f.write(doi + '\n')
+    if len(all_rsc_dois) > 0:
+        with open(os.path.join(save_dir, 'rsc_dois.txt'), 'w') as f:
+            for doi in all_rsc_dois:
+                f.write(doi + '\n')
+    if len(all_acs_dois) > 0:
+        with open(os.path.join(save_dir, 'acs_dois.txt'), 'w') as f:
+            for doi in all_acs_dois:
+                f.write(doi + '\n')
     print('Finished downloading articles')
 
 
