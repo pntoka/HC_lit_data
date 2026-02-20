@@ -138,16 +138,35 @@ def sections_wiley_html(soup, list_remove):
                 for paragraph in section_clean.p.find_next_siblings('p'):
                     data_sub['content'].append(paragraph.text)
                 data['content'].append(data_sub)
-            elements = section_clean.find_all('section', 'article-section__sub-content')
-            for element in elements:
-                data_sub = {}
-                data_sub['name'] = element.find('h3').text
-                data_sub['type'] = 'h3'
-                data_sub['content'] = []
-                paragraphs = tools.find_paragraphs_list(element, paragraph_tags)
-                for paragraph in paragraphs:
-                    data_sub['content'].append(paragraph.text)
-                data['content'].append(data_sub)
+            sub_element = section_clean.find('section', 'article-section__sub-content')
+            if sub_element is not None:
+                sub_elements = sub_element.find_next_siblings('section', 'article-section__sub-content') # using siblings as there may be sub-sub-sections
+                sub_elements.insert(0, sub_element)
+                for sub_element in sub_elements:
+                    data_sub = {}
+                    data_sub['name'] = sub_element.find('h3').text
+                    data_sub['type'] = 'h3'
+                    data_sub['content'] = []
+                    if sub_element.find('section', 'article-section__sub-content'):
+                        if sub_element.find_all(['p','section'])[0].name == 'p':
+                            data_sub['content'].append(sub_element.find('p').text)
+                            for paragraph in sub_element.p.find_next_siblings('p'):  # deals with paragraphs before sub-sub-sections
+                                data_sub['content'].append(paragraph.text)
+                        data_sub_sub_elements = sub_element.find_all('section', 'article-section__sub-content')
+                        for sub_sub_element in data_sub_sub_elements:
+                            data_sub_sub = {}
+                            data_sub_sub['name'] = sub_sub_element.find('h4').text
+                            data_sub_sub['type'] = 'h4'
+                            data_sub_sub['content'] = []
+                            paragraphs = tools.find_paragraphs_list(sub_sub_element, paragraph_tags)
+                            for paragraph in paragraphs:
+                                data_sub_sub['content'].append(paragraph.text)
+                            data_sub['content'].append(data_sub_sub)
+                    else:
+                        paragraphs = tools.find_paragraphs_list(sub_element, paragraph_tags)
+                        for paragraph in paragraphs:
+                            data_sub['content'].append(paragraph.text)
+                    data['content'].append(data_sub)
         else:
             section_clean = tools.remove_tags_soup(section, list_remove)
             paragraphs = tools.find_paragraphs_list(section_clean, paragraph_tags)

@@ -134,20 +134,23 @@ def article_extractor(doi, path, save_dir):
             return False
             
     elif prefix == pub_prefix['Wiley']:
-        if html_xml_str.startswith('<html class'):
+        if html_xml_str.startswith('<html'):
             try:
                 Wiley_html_to_json(soup, doi, save_dir)
             except(AttributeError, IndexError):
                 print('Error with file: ', doi)
                 return False
                  
-        if html_xml_str.startswith('<component xmlns'):
+        elif html_xml_str.startswith('<component xmlns'):
             try:
                 soup = BeautifulSoup(html_xml_str, 'xml')
                 Wiley_to_json(soup, doi, save_dir)
             except(AttributeError, IndexError):
                 print('Error with file: ', doi)
                 return False
+        else:
+            print('Wiley file format not recognised for file: ', doi)
+            return False
                 
     elif prefix == pub_prefix['Springer']:
         try:
