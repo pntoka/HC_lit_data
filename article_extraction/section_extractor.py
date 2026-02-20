@@ -45,10 +45,25 @@ def subheadings_content_frontiers(list):
             return data
     return data
     
+def sections_acs_letters(soup, list_remove):
+    '''Extract sections from ACS Letters articles'''
+    main_content = soup.find('div', class_= 'article_content')
+    first_paragraph = main_content.find('p')
+    paragraphs = first_paragraph.find_next_siblings('p')
+    paragraphs.insert(0, first_paragraph)
+    paragraphs_text = []
+    for paragraph in paragraphs:
+        paragraph_clean = tools.remove_tags_soup(paragraph, list_remove)
+        paragraphs_text.append(paragraph_clean.text)
+    return paragraphs_text
+
 def sections_acs(soup, list_remove):
     paragraph_tags = {'name':'div', 'class':['NLM_p last','NLM_p']}
     main_content = soup.find('div', class_= 'article_content')
     sections = main_content.find_all('div', class_='NLM_sec NLM_sec_level_1')
+    if sections == []:
+        data_dict = sections_acs_letters(soup, list_remove)
+        return data_dict
     data_dict = []
     for section in sections:
         data = {}
@@ -115,6 +130,20 @@ def sections_wiley(soup, list_remove):
         data_dict.append(data)
     return data_dict
 
+def sections_wiley_html_letters(soup, list_remove):
+    '''Function to extract sections from Wiley html Letters articles'''
+    main_content = soup.find('section', 'article-section article-section__full')
+    sections = main_content.find('section', 'article-section__content')
+    first_paragraph = sections.find('p')
+    paragraphs = first_paragraph.find_next_siblings('p')
+    paragraphs.insert(0, first_paragraph)
+    paragraphs_text = []
+    for paragraph in paragraphs:
+        paragraph_clean = tools.remove_tags_soup(paragraph, list_remove)
+        paragraphs_text.append(paragraph_clean.text)
+    return paragraphs_text
+
+
 def sections_wiley_html(soup, list_remove):
     '''
     Function to get sections from Wiley html file
@@ -123,6 +152,9 @@ def sections_wiley_html(soup, list_remove):
     main_content = soup.find('section', 'article-section article-section__full')
     sections = main_content.find_all('section', 'article-section__content')
     data_dict = []
+    if sections[0].find('h2') is None:   # deals with letters which don't have headings
+        data_dict = sections_wiley_html_letters(soup, list_remove)
+        return data_dict
     for section in sections:
         data = {}
         data['name'] = section.find('h2').text
