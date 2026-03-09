@@ -1,15 +1,19 @@
 '''Script to filter articles based on title and abstract using local LLM'''
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
-from langchain_community.llms import LlamaCpp
+from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
 from get_abstract import get_abstract_and_title
 
-MODEL_PATH = Path.home() / "llm_models" / "gemma-3-4b-it-Q4_K_M.gguf"
+# MODEL_NAME = "qwen3.5:4b"
+# MODEL_NAME = "gemma3:4b"
+# MODEL_NAME = "phi4-mini:3.8b"
+MODEL_NAME = "llama3.2:3b"
 PROMPT_PATH = Path(__file__).parent / "prompt.md"
 
 
@@ -26,23 +30,44 @@ def load_dois(doi_file: Path) -> list[str]:
 
 
 def build_chain(system_prompt: str) -> tuple:
-    """Initialise the LlamaCpp model and PromptTemplate chain."""
-    llm = LlamaCpp(
-        model_path=str(MODEL_PATH),
-        n_gpu_layers=-1,
-        temperature=0.0,
-        max_tokens=4,
+    """Initialise the OllamaLLM model and PromptTemplate chain."""
+    llm = OllamaLLM(
+        model=MODEL_NAME,
+        temperature=0.1,
+        num_ctx=2048,
+        num_predict=-1,
+        reasoning=False,
         verbose=False,
     )
 
     template = (
         f"{system_prompt}\n\n"
-        "Title: {title}\n\n"
+        "Title: {title}\n"
         "Abstract: {abstract}"
     )
     prompt = PromptTemplate(input_variables=["title", "abstract"], template=template)
     chain = prompt | llm
     return chain
+
+
+def parse_answer(response: str) -> str:
+    """Extract the final yes/no verdict from a reasoning response.
+
+    Looks for an 'Answer: yes/no' line. Falls back to the last
+    line that contains only 'yes' or 'no'.
+    """
+    # Try to match an explicit "Answer: yes/no" line
+    match = re.search(r"(?i)\banswer\s*:\s*(yes|no)\b", response)
+    if match:
+        return match.group(1).lower()
+
+    # Fallback: scan lines in reverse for a bare yes/no
+    for line in reversed(response.strip().splitlines()):
+        word = line.strip().lower().rstrip(".")
+        if word in ("yes", "no"):
+            return word
+
+    return response.strip().lower()
 
 
 def classify_doi(doi: str, chain, api_key: str) -> str | None:
@@ -51,9 +76,11 @@ def classify_doi(doi: str, chain, api_key: str) -> str | None:
     if abstract is None or title is None:
         print(f"  [SKIP] Could not retrieve abstract for {doi}")
         return None
-
+    print(f"  Title: {title}")  # for debugging
+    print(f"  Abstract: {abstract[:200]}...")  # print first 200 chars of abstract
     response = chain.invoke({"title": title, "abstract": abstract})
-    return response.strip().lower()
+    print(f"  LLM reasoning:\n{response.strip()}") # for debugging
+    return parse_answer(response)
 
 
 def save_dois(dois: list[str], path: Path) -> None:
@@ -66,17 +93,17 @@ def main():
     parser = argparse.ArgumentParser(
         description="Filter articles by relevance to hard carbon for sodium-ion batteries using a local LLM."
     )
-    parser.add_argument("doi_file", type=Path, help="Path to a text file containing one DOI per line.")
-    parser.add_argument("save_dir", type=Path, help="Directory where result files will be saved.")
+    parser.add_argument("--doi_file", type=Path, help="Path to a text file containing one DOI per line.")
+    parser.add_argument("--save_dir", type=Path, help="Directory where result files will be saved.")
     args = parser.parse_args()
 
     doi_file = args.doi_file
     save_dir = args.save_dir
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    api_key = os.environ.get("SCOPUS_API_KEY")
+    api_key = os.environ.get("ELSEVIER_API_KEY")
     if not api_key:
-        print("Error: SCOPUS_API_KEY environment variable is not set.")
+        print("Error: ELSEVIER_API_KEY environment variable is not set.")
         sys.exit(1)
 
     system_prompt = load_prompt(PROMPT_PATH)
@@ -90,6 +117,7 @@ def main():
     for i, doi in enumerate(dois, 1):
         print(f"[{i}/{len(dois)}] {doi}")
         result = classify_doi(doi, chain, api_key)
+        print(result)
         if result is None:
             skipped.append(doi)
         elif result == "yes":
