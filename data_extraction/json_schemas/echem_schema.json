@@ -5,144 +5,130 @@
   "type": "object",
   "properties": {
 
-    "cell_type": {
-      "type": ["string","null"],
-      "description": "The type of electrochemical cell used, e.g. 'coin cell', 'Swagelok cell', 'pouch cell', 'cylindrical cell'. Include the format code if mentioned, e.g. 'CR2032'.",
+    "counter_electrode": {
+      "type": ["string", "null"],
+      "description": "Counter electrode material used in the cell, e.g. 'sodium metal', 'NVP (Na3V2(PO4)3)'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Exact text snippet from the article that supports the extracted cell type."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted counter electrode."
       }
     },
 
-    "cell_configuration": {
-      "type": ["string","null"],
-      "description": "The electrode configuration of the cell, e.g. 'half-cell', 'full cell', 'symmetric cell'.",
+    "additive": {
+      "type": ["string", "null"],
+      "description": "Conductive additive used in the electrode slurry, e.g. 'Super P', 'carbon black', 'acetylene black', 'Ketjen black'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Exact text snippet supporting the extracted configuration."
-      }
-    },
-
-    "cell_assembly_details": {
-      "type": ["string","null"],
-      "description": "Description of cell assembly conditions including counter electrode, separator, and atmosphere. Example: 'CR2032 coin cells assembled in an argon-filled glovebox using sodium metal counter electrode and glass fiber separator.'",
-      "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence or text span describing the cell assembly."
-      }
-    },
-
-    "active_material": {
-      "type": ["string","null"],
-      "description": "The active material used in the working electrode. Usually the hard carbon sample name reported in the article.",
-      "evidence": {
-        "type": ["string","null"],
-        "description": "Text snippet identifying the active material or sample name."
-      }
-    },
-
-    "electrode_composition": {
-      "type": ["string","null"],
-      "description": "Composition of the electrode slurry including active material, conductive additive, and binder fractions. Example: '80 wt% hard carbon, 10 wt% Super P, 10 wt% PVDF'.",
-      "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence describing the electrode composition."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted additive."
       }
     },
 
     "binder": {
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "description": "Binder material used in the electrode slurry, e.g. 'PVDF', 'CMC', 'SBR', 'PAA'. Include full name if given.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Text snippet mentioning the binder."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted binder."
       }
     },
 
     "current_collector": {
-      "type": ["string","null"],
-      "description": "Material used as the current collector for the working electrode, e.g. 'copper foil', 'Cu foil', 'carbon-coated aluminium foil'.",
+      "type": ["string", "null"],
+      "description": "Material used as the current collector for the working electrode, e.g. 'Al foil', 'Cu foil', 'carbon-coated aluminium foil'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence describing the current collector."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted current collector."
       }
     },
 
-    "mass_loading": {
-      "type": ["string","null"],
-      "description": "Areal mass loading of active material on the electrode, typically reported in units such as 'mg cm⁻²'. If a range is given include the range as a string.",
+    "active_mass_loading": {
+      "type": ["string", "null"],
+      "description": "Areal mass loading of the electrode slurry on the current collector, typically in mg cm-2. Report as a range if given, e.g. '1.0-1.5 mg cm-2'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Text snippet describing the electrode mass loading."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted mass loading."
       }
     },
 
-    "electrode_preparation": {
-      "type": ["string","null"],
-      "description": "Description of electrode slurry preparation, coating, and drying conditions. Example: 'Slurry cast on Cu foil using NMP and dried at 80 °C under vacuum overnight.'",
+    "electrode_composition": {
+      "type": ["string", "null"],
+      "description": "Weight ratio of active material, conductive additive, and binder, e.g. '80:10:10', '90:5:5'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence describing electrode preparation and drying."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted electrode composition."
       }
     },
 
-    "electrolyte": {
-      "type": ["string","null"],
-      "description": "Full electrolyte composition including salt, concentration, solvent mixture, and additives. Example: '1 M NaPF6 in EC:DEC (1:1) with 5 vol% FEC'.",
+    "electrolyte_salt": {
+      "type": ["string", "null"],
+      "description": "Chemical formula or name of the electrolyte salt, e.g. 'NaClO4', 'NaPF6', 'NaTFSI'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Text snippet describing the electrolyte composition."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted electrolyte salt."
+      }
+    },
+
+    "electrolyte_concentration": {
+      "type": ["string", "null"],
+      "description": "Concentration of the electrolyte salt, e.g. '1 M', '0.8 mol L-1'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted electrolyte concentration."
+      }
+    },
+
+    "electrolyte_solvents": {
+      "type": ["string", "null"],
+      "description": "Comma-separated list of solvents used in the electrolyte, e.g. 'ethylene carbonate (EC), propylene carbonate (PC)' or 'EC, DEC'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted electrolyte solvents."
+      }
+    },
+
+    "electrolyte_solvent_ratio": {
+      "type": ["string", "null"],
+      "description": "Volume or weight ratio of the electrolyte solvents, e.g. '1:1 v/v', '1:1:1 vol%'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted solvent ratio."
+      }
+    },
+
+    "cell_type": {
+      "type": ["string", "null"],
+      "description": "Type of electrochemical cell including format code if mentioned, e.g. 'coin cell CR2032', 'Swagelok cell', 'pouch cell'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted cell type."
       }
     },
 
     "separator": {
-      "type": ["string","null"],
+      "type": ["string", "null"],
       "description": "Separator material used in the cell, e.g. 'glass fiber', 'Celgard 2400', 'polypropylene membrane'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence mentioning the separator material."
-      }
-    },
-
-    "voltage_window": {
-      "type": ["string","null"],
-      "description": "Voltage range used for galvanostatic charge-discharge cycling, including reference electrode if specified. Example: '0.01–2.5 V vs Na/Na+'.",
-      "evidence": {
-        "type": ["string","null"],
-        "description": "Sentence describing the voltage window."
-      }
-    },
-
-    "current_densities": {
-      "type": "array",
-      "description": "List of current densities used during electrochemical testing, e.g. rate capability tests.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": ["string","null"],
-            "description": "Current density value with units, e.g. '50 mA g⁻¹'."
-          },
-          "evidence": {
-            "type": ["string","null"],
-            "description": "Sentence mentioning this current density."
-          }
-        }
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted separator."
       }
     },
 
     "cycling_instrument": {
-      "type": ["string","null"],
-      "description": "Battery cycler or instrument used for galvanostatic testing, e.g. 'LAND CT2001A', 'Neware BTS4000', 'Arbin'.",
+      "type": ["string", "null"],
+      "description": "Battery cycler or instrument used for electrochemical testing, e.g. 'LAND CT2001A', 'Neware BTS4000', 'Arbin BT-2000'.",
       "evidence": {
-        "type": ["string","null"],
-        "description": "Text snippet mentioning the testing instrument."
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted cycling instrument."
       }
     },
 
-    "notes": {
-      "type": ["string","null"],
-      "description": "Any additional details about electrochemical methodology not captured in the structured fields above."
+    "voltage_window": {
+      "type": ["string", "null"],
+      "description": "Voltage range used for galvanostatic cycling, including reference if given, e.g. '0.01-2.0 V vs Na/Na+'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted voltage window."
+      }
     }
 
   },
