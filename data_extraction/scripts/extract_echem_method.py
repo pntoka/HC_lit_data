@@ -38,6 +38,15 @@ PROMPT_PATH = Path(__file__).resolve().parents[1] / "prompts" / "extract_echem_m
 # Helpers
 # ---------------------------------------------------------------------------
 
+def _format_validation_errors(exc: ValidationError) -> str:
+    """Return a concise error string without Pydantic's 'further information' URLs."""
+    lines = []
+    for err in exc.errors():
+        loc = " -> ".join(str(p) for p in err["loc"]) if err["loc"] else "(root)"
+        lines.append(f"- {loc}: {err['msg']}")
+    return "\n".join(lines)
+
+
 def load_prompt_template(path: Path) -> str:
     """Return the raw prompt template string."""
     with open(path) as fh:
@@ -81,11 +90,11 @@ def extract(article_text: str, llm: ChatOllama, prompt_template: str) -> Electro
                 print(f"  Validation succeeded on attempt {attempt}.")
             return result
         except ValidationError as exc:
-            print(f"  Attempt {attempt}/{MAX_RETRIES} failed validation:\n{exc}")
+            print(f"  Attempt {attempt}/{MAX_RETRIES} failed validation:\n{_format_validation_errors(exc)}")
             if attempt == MAX_RETRIES:
                 raise ExtractionError(
                     f"Extraction failed after {MAX_RETRIES} attempts. "
-                    f"Last validation error:\n{exc}",
+                    f"Last validation error:\n{_format_validation_errors(exc)}",
                     raw=raw,
                 ) from exc
 
@@ -95,7 +104,7 @@ def extract(article_text: str, llm: ChatOllama, prompt_template: str) -> Electro
                 HumanMessage(
                     content=(
                         "The JSON you returned failed schema validation with the following errors:\n\n"
-                        f"{exc}\n\n"
+                        f"{_format_validation_errors(exc)}\n\n"
                         "Please correct the issues and return a valid JSON object that conforms "
                         "exactly to the required schema. Return only the JSON object."
                     )

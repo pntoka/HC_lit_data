@@ -53,7 +53,7 @@ def main() -> None:
     parser.add_argument(
         "--gt_dir",
         type=Path,
-        default=Path(__file__).parent.parent / "test_data" / "input",
+        default=Path(__file__).parent.parent / "test_data" / "input_filter",
         help=(
             "Directory containing ground-truth files "
             "(relevant_dois.txt and not_relevant_dois.txt). "
