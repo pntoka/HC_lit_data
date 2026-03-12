@@ -1,4 +1,4 @@
-# HC_lit_data
+# lit_retrieve
 
 Pipeline for searching, retrieving, and extracting scientific literature data from multiple publishers. The pipeline consists of three sequential stages:
 
