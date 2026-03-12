@@ -1,12 +1,19 @@
 [project]
-name = "hc-lit-data"
+name = "lit-retrieve"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pipeline for searching, retrieving, and extracting scientific literature data."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
-    "langchain>=1.2.10",
-    "langchain-community>=0.4.1",
-    "langchain-ollama>=1.0.1",
-    "llama-cpp-python>=0.3.16",
+    # HTTP and web scraping
+    "requests>=2.32.3",
+    "selenium==4.25.0",
+    "webdriver-manager>=4.0.2",
+    # HTML/XML parsing
+    "beautifulsoup4>=4.12",
+    "lxml>=5.0",
+    # Image handling (figure_downloader)
+    "Pillow>=10.0",
+    # NOTE: LimeSoup must be installed manually from GitHub.
+    # See the README for installation instructions.
 ]
