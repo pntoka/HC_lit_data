@@ -4,3 +4,5 @@ __pycache__
 .coverage
 /test_data/output*
 .python-version
+.ipynb_checkpoints
+*.log
