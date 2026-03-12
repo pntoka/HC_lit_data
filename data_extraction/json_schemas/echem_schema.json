@@ -59,6 +59,15 @@
       }
     },
 
+    "slurry_solvent": {
+      "type": ["string", "null"],
+      "description": "Solvent used for preparing the electrode slurry, e.g. 'NMP (N-methyl-2-pyrrolidone)', 'deionised water', 'DI water'.",
+      "evidence": {
+        "type": ["string", "null"],
+        "description": "Exact text snippet from the article supporting the extracted slurry solvent."
+      }
+    },
+
     "electrolyte_salt": {
       "type": ["string", "null"],
       "description": "Chemical formula or name of the electrolyte salt, e.g. 'NaClO4', 'NaPF6', 'NaTFSI'.",

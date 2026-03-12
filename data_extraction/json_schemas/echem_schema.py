@@ -49,6 +49,11 @@ class ElectrochemicalMethodology(BaseModel):
         default_factory=EvidencedStr,
         description="Weight ratio of active material, conductive additive, and binder, e.g. '80:10:10', '90:5:5'."
     )
+    slurry_solvent: EvidencedStr = Field(
+        default_factory=EvidencedStr,
+        description="Solvent used for preparing the electrode slurry, e.g. 'NMP (N-methyl-2-pyrrolidone)', "
+                    "'deionised water', 'DI water'."
+    )
     electrolyte_salt: EvidencedStr = Field(
         default_factory=EvidencedStr,
         description="Chemical formula or name of the electrolyte salt, e.g. 'NaClO4', 'NaPF6', 'NaTFSI'."
