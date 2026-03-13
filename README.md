@@ -15,7 +15,7 @@ Supported publishers: Elsevier, ACS, RSC, Wiley, Springer, Nature, Taylor & Fran
 
 ### 1. Python environment
 
-Requires Python >= 3.11. Install dependencies with [uv](https://github.com/astral-sh/uv) (recommended) or pip:
+Requires Python >= 3.10. Install dependencies with [uv](https://github.com/astral-sh/uv) (recommended) or pip:
 
 ```bash
 uv sync
@@ -25,12 +25,12 @@ pip install -e .
 
 ### 2. LimeSoup (required for Elsevier and RSC extraction)
 
-LimeSoup must be installed manually from its GitHub repository. Before installing, the `setup.py` must be modified to remove the hard-pinned `BeautifulSoup` version (change `beautifulsoup4==4.9.3` to `beautifulsoup4>=4.9.3`).
+LimeSoup must be installed manually from its GitHub repository. Before installing, the `setup.py` must be modified to remove the hard-pinned `lxml` version (change `lxml>=4.2.6,<=4.3.5` to `lxml>=4.2.6`).
 
 ```bash
 git clone https://github.com/CederGroupHub/LimeSoup.git
 cd LimeSoup
-# Edit setup.py: change  beautifulsoup4==4.9.3  →  beautifulsoup4>=4.9.3
+# Edit setup.py: change  lxml>=4.2.6,<=4.3.5  →  lxml>=4.2.6
 pip install .
 ```
 
@@ -50,11 +50,11 @@ Add to your shell profile (`~/.bashrc`, `~/.zshrc`) to make it permanent.
 
 ---
 
-## Stage 1 — DOI search (`DOI_retrieve/`)
+## Stage 1 — DOI search (`DOI_search/`)
 
 Searches Semantic Scholar or Crossref for DOIs matching a configurable set of queries and publisher filters.
 
-**Configure** the search by editing [`DOI_retrieve/query.toml`](DOI_retrieve/query.toml):
+**Configure** the search by editing [`DOI_search/query.toml`](DOI_search/query.toml):
 
 | Field | Description |
 |---|---|
@@ -70,13 +70,13 @@ Searches Semantic Scholar or Crossref for DOIs matching a configurable set of qu
 
 ```bash
 # Use the engine specified in query.toml
-python DOI_retrieve/doi_retrieve.py DOI_retrieve/query.toml
+python DOI_search/doi_search.py DOI_search/query.toml
 
 # Force Semantic Scholar only
-python DOI_retrieve/doi_sem_scholar.py DOI_retrieve/query.toml
+python DOI_search/doi_sem_scholar.py DOI_search/query.toml
 
 # Force Crossref only
-python DOI_retrieve/doi_crossref.py DOI_retrieve/query.toml
+python DOI_search/doi_crossref.py DOI_search/query.toml
 ```
 
 **Outputs** (written to `save_dir`):
@@ -104,7 +104,7 @@ ACS and RSC DOIs that require authenticated access are automatically separated a
 
 ### ACS and RSC (authenticated download)
 
-Requires a Chrome browser installation. Chrome is launched with remote debugging enabled so you can log in before scraping begins.
+Requires a Chrome browser installation. Chrome is launched with remote debugging enabled so you can log in before retrieval begins.
 
 ```bash
 python article_retrieve/acs_rsc_doi_to_article.py \
@@ -114,7 +114,7 @@ python article_retrieve/acs_rsc_doi_to_article.py \
     --chrome_data_dir /path/to/chrome/profile
 ```
 
-You will be prompted to log in to ACS or RSC in the opened Chrome window before scraping proceeds.
+You will be prompted to log in to ACS or RSC in the opened Chrome window before retrieval proceeds.
 
 **Output:** one `.txt` file per article, named by DOI with `/` replaced by `-` (e.g. `10.1016-j.carbon.2017.12.103.txt`).
 
