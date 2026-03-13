@@ -21,15 +21,9 @@ from bs4 import BeautifulSoup
 
 import to_json
 import add_abstract
-
-# Conditionally import contributed extras modules
-try:
-    import captions_extractor
-    import tables_extractor
-    import figure_downloader
-    EXTRAS_AVAILABLE = True
-except ImportError:
-    EXTRAS_AVAILABLE = False
+import captions_extractor
+import tables_extractor
+import figure_downloader
 
 
 # Publisher prefix mapping shared across routing helpers
@@ -136,7 +130,7 @@ def _augment_json(json_path, content, publisher, api_key=None,
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    if not skip_extras and EXTRAS_AVAILABLE:
+    if not skip_extras:
         soup = _get_soup(content, publisher)
 
         try:
