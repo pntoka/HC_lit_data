@@ -1,7 +1,7 @@
 """
 Script to retrieve DOIs from Crossref API for specific prefixes
 """
-import doi_retrieve_tools as drt
+import doi_search_tools as drt
 import sys
 
 if __name__ == '__main__':

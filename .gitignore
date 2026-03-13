@@ -2,7 +2,6 @@ __pycache__
 .vscode
 .DS_store
 .coverage
-/test_data/output*
 .python-version
 .ipynb_checkpoints
 *.log

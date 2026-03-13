@@ -1,7 +1,7 @@
 ''''
 Script to retrieve a list of DOIs from Semantic Scholar or Crossref based on search query specified in the toml file
 '''
-import doi_retrieve_tools as drt
+import doi_search_tools as drt
 import sys
 import os
 
