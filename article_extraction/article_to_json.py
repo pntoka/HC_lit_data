@@ -20,6 +20,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 import to_json
+import add_abstract
 
 # Conditionally import contributed extras modules
 try:
@@ -29,12 +30,6 @@ try:
     EXTRAS_AVAILABLE = True
 except ImportError:
     EXTRAS_AVAILABLE = False
-
-try:
-    import add_abstract
-    ABSTRACT_AVAILABLE = True
-except ImportError:
-    ABSTRACT_AVAILABLE = False
 
 
 # Publisher prefix mapping shared across routing helpers
@@ -173,7 +168,7 @@ def _augment_json(json_path, content, publisher, api_key=None,
             print(f"  Warning: figure URL extraction failed: {e}")
             data.setdefault("Figure_urls", [])
 
-    if not skip_abstract and ABSTRACT_AVAILABLE and api_key:
+    if not skip_abstract and api_key:
         doi_str = data.get("DOI", "")
         try:
             xml_content = add_abstract.abstract_retrieve(doi_str, api_key)
@@ -182,7 +177,6 @@ def _augment_json(json_path, content, publisher, api_key=None,
             print(f"  Warning: abstract retrieval failed for {doi_str}: {e}")
             data.setdefault("Abstract", "")
         time.sleep(1)
-
     with open(json_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, sort_keys=True, indent=4, ensure_ascii=False)
 
