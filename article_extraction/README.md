@@ -59,9 +59,9 @@ Returns only the sections whose headings contain any of the given keywords (case
 | `section_extractor.py` | Publisher-specific section parsing |
 | `extractor_tools.py` | Shared helpers: tag removal, paragraph finding, `create_json_data` |
 | `add_abstract.py` | Scopus API abstract retrieval |
-| `captions_extractor.py` | Figure and table caption extraction (contributed) |
-| `tables_extractor.py` | Table HTML extraction (contributed) |
-| `figure_downloader.py` | Figure URL extraction and download (contributed) |
+| `captions_extractor.py` | Figure and table caption extraction |
+| `tables_extractor.py` | Table HTML extraction |
+| `figure_downloader.py` | Figure URL extraction and download |
 | `doi_tools.py` | DOI ↔ filename conversion utilities |
 
 ## Extras modules
