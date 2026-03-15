@@ -64,10 +64,3 @@ Returns only the sections whose headings contain any of the given keywords (case
 | `figure_downloader.py` | Figure URL extraction and download |
 | `doi_tools.py` | DOI ↔ filename conversion utilities |
 
-## Extras modules
-
-`captions_extractor`, `tables_extractor`, and `figure_downloader` are contributed modules.
-When present they are automatically used by `article_to_json.py` to populate
-`Figure_captions`, `Table_captions`, `Tables`, and `Figure_urls` in the output JSON.
-If any of these modules is missing the script falls back gracefully and skips that step.
-Pass `--skip_extras` to disable this augmentation entirely.
