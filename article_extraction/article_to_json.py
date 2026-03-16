@@ -239,10 +239,8 @@ def main():
     print(f"Processing files from: {data_dir}")
     print(f"Saving JSON files to:  {save_dir}")
     print(f"Log file:              {log_path}")
-    if not args.skip_extras and EXTRAS_AVAILABLE:
+    if not args.skip_extras:
         print("Extras:    captions, tables, and figure URLs will be extracted")
-    elif not EXTRAS_AVAILABLE:
-        print("Extras:    modules not available (captions/tables/figure URLs skipped)")
     if not args.skip_abstract:
         print("Abstract:  will be retrieved from the Scopus API (1 s delay per article)")
     print("-" * 80)
