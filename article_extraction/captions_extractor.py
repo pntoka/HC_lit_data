@@ -29,21 +29,13 @@ def acs_captions(soup):
             cap = fig.find('p').get_text(strip=True)
             captions.append(cap)
         elif id.startswith('sch'):
-            scheme_label = fig.find("h2", class_="fig-label").get_text(strip=True)
-            texts = []
-            for p in fig.find_all("p"):
-                for span in p.find_all("span", class_="fn-label"):
-                    span.decompose()     # remove Scheme a/b/c
-                txt = p.get_text(strip=True)
-                if txt:
-                    texts.append(txt)
-            cap = scheme_label + " " + " ".join(texts)
-            captions.append(cap)
+            texts = fig.find('div', class_='title2').get_text(strip=True)
+            captions.append(texts)
     for tab in soup.find_all('div', class_='NLM_caption'):
         cap = tab.get_text(strip=True)
         captions.append(cap)
     captions = list(dict.fromkeys(captions)) 
-    captions = [c for c in captions if c.lstrip().lower().startswith(("figure", "table"))]
+    captions = [c for c in captions if c.lstrip().lower().startswith(("figure", "table", "scheme"))]
     results = structure_figure_captions(captions)
     return results
 
