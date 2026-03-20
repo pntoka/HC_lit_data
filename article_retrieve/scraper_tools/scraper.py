@@ -83,6 +83,8 @@ class FullTextDownloader:
         opts.add_argument("--headless")
         # options.binary_location = r"C:\Program Files (x86)\Mozilla Firefox\firefox.exe"      #stuff for webdriver to work on windows laptop
         # driver = webdriver.Firefox(executable_path=r"C:\Users\Piotr\geckodriver.exe", options=options)
+        if os.path.exists("/snap/firefox/current/usr/lib/firefox/firefox"):
+            opts.binary_location = "/snap/firefox/current/usr/lib/firefox/firefox"
         driver = webdriver.Firefox(options=opts)
         driver.get(link)
         driver.implicitly_wait(5)
