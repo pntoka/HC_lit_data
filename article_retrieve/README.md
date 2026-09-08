@@ -32,7 +32,7 @@ python doi_to_article.py \
     --save_dir /path/to/articles/
 ```
 
-ACS and RSC DOIs are skipped and written to `acs_dois.txt` and `rsc_dois.txt` in `save_dir`.
+ACS, RSC and Springer DOIs are skipped and written to `acs_dois.txt`, `rsc_dois.txt` and `springer_dois.txt` in `save_dir`.
 
 ### Step 2 — Download ACS and RSC articles
 
@@ -51,5 +51,6 @@ A Chrome window will open. Log in to the publisher site when prompted, then pres
 - `<doi>.txt` — article HTML or XML content, one file per DOI
 - `acs_dois.txt` — ACS DOIs for separate processing
 - `rsc_dois.txt` — RSC DOIs for separate processing
+- `springer_dois.txt` — Springer DOIs for separate processing
 - `article_downloader.log` — success/failure log
 - `acs_rsc_downloader.log` — ACS/RSC success/failure log
