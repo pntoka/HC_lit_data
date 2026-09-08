@@ -134,15 +134,10 @@ def springer_link_selector(doi, links, pdf=False):
         link = link_checker(part, links)
         if link is not None:
             return link
-    part = '/fulltext.html'
-    link = link_checker(part, links)
-    if link is not None:
-        return link
-    part = '.pdf'
-    link = link_checker(part, links)
-    if link is not None:
-        link = re.sub('.pdf', '', link)
-    return link
+    # just return the api link for springer
+    base_url = 'https://link.springer.com/article/'
+    api_url = base_url + doi
+    return api_url  # html link
 
 
 def nature_link_selector(doi, links, pdf=False):

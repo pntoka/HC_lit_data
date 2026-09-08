@@ -113,24 +113,25 @@ class FullTextDownloader:
         with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as save_file:
             save_file.write(page)
 
-    def springer_scrape_html(self, doi, save_dir):
-        '''
-        Function get page source from springer link using requests
-        '''
-        base_url = 'https://link.springer.com/article/'
-        api_url = base_url + doi
-        headers = {
-            'Accept': 'text/html',
-            'User-Agent': 'Mozilla/5.0'
-        }
-        r = requests.get(api_url, stream=True, headers=headers, timeout=30)
-        if r.status_code == 200:
-            with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as f:
-                f.write(r.content)
-            return True
-        elif r.status_code != 200:
-            print('Error: ', r.status_code, f'for {doi}')
-            return False
+    # NO LONGER WORKS FOR SPRINGER
+    # def springer_scrape_html(self, doi, save_dir):
+    #     '''
+    #     Function get page source from springer link using requests
+    #     '''
+    #     base_url = 'https://link.springer.com/article/'
+    #     api_url = base_url + doi
+    #     headers = {
+    #         'Accept': 'text/html',
+    #         'User-Agent': 'Mozilla/5.0'
+    #     }
+    #     r = requests.get(api_url, stream=True, headers=headers, timeout=30)
+    #     if r.status_code == 200:
+    #         with open(os.path.join(save_dir, f"{doi.replace('/','-')}.txt"), "wb") as f:
+    #             f.write(r.content)
+    #         return True
+    #     elif r.status_code != 200:
+    #         print('Error: ', r.status_code, f'for {doi}')
+    #         return False
 
 
 def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
@@ -139,6 +140,7 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
     '''
     rsc_dois = []
     acs_dois = []
+    springer_dois = []
     log = setup_logger('log', os.path.join(save_dir, 'article_downloader.log'))
     downloader = FullTextDownloader(PUB_PREFIX, elsevier_api_key)
     for doi in dois:
@@ -149,16 +151,12 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
                 log.info(f'Error with downloading: {doi}')
             else:
                 log.info(f'Downloaded: {doi}')
-        elif doi[:7] == PUB_PREFIX['Springer']:
-            result = downloader.springer_scrape_html(doi, save_dir)
-            if result is False:
-                log.info(f'Error with downloading: {doi}')
-            else:
-                log.info(f'Downloaded: {doi}')
         elif doi[:7] == PUB_PREFIX['RSC']:
             rsc_dois.append(doi)
         elif doi[:7] == PUB_PREFIX['ACS']:
             acs_dois.append(doi)
+        elif doi[:7] == PUB_PREFIX['Springer']:
+            springer_dois.append(doi)
         else:
             link = downloader.link_selector(doi, pdf)
             if link is not None:
@@ -167,7 +165,7 @@ def article_downloader(dois, save_dir, elsevier_api_key, pdf=False):
             if link is None:
                 print(f'No link found for {doi}')
                 log.info(f'Error with downloading: {doi}')
-    return rsc_dois, acs_dois
+    return rsc_dois, acs_dois, springer_dois
 
 
 def acs_rsc_article_downloader(dois, save_dir, service, pdf=False):
@@ -177,10 +175,11 @@ def acs_rsc_article_downloader(dois, save_dir, service, pdf=False):
     log_acs_rsc = setup_logger('log_acs_rsc', os.path.join(save_dir,'acs_rsc_downloader.log'))
     downloader = FullTextDownloader(PUB_PREFIX, '')
     for doi in dois:
-        if doi[:7] == PUB_PREFIX['RSC'] or doi[:7] == PUB_PREFIX['ACS']:
+        if doi[:7] == PUB_PREFIX['RSC'] or doi[:7] == PUB_PREFIX['ACS'] or doi[:7] == PUB_PREFIX['Springer']:
             link = downloader.link_selector(doi, pdf)
             if link is not None:
                 downloader.web_scrape_acs_rsc(doi, link, save_dir, service)
+                time.sleep(3)
             if link is None:
                 print(f'No link found for {doi}')
                 log_acs_rsc.info(f'Error with downloading: {doi}')
@@ -194,11 +193,13 @@ def download_article_from_doi(file_path, save_dir, elsevier_api_key, pdf=False, 
     doi_batches = make_batches(dois, batch_size)
     all_rsc_dois = []
     all_acs_dois = []
+    all_springer_dois = []
     for i, batch in enumerate(doi_batches):
         print(f'Downloading batch {i+1} of {len(doi_batches)}')
-        rsc_dois, acs_dois = article_downloader(batch, save_dir, elsevier_api_key, pdf)
+        rsc_dois, acs_dois, springer_dois = article_downloader(batch, save_dir, elsevier_api_key, pdf)
         all_rsc_dois.extend(rsc_dois)
         all_acs_dois.extend(acs_dois)
+        all_springer_dois.extend(springer_dois)
         time.sleep(10)
     if len(all_rsc_dois) > 0:
         with open(os.path.join(save_dir, 'rsc_dois.txt'), 'w') as f:
@@ -208,12 +209,16 @@ def download_article_from_doi(file_path, save_dir, elsevier_api_key, pdf=False, 
         with open(os.path.join(save_dir, 'acs_dois.txt'), 'w') as f:
             for doi in all_acs_dois:
                 f.write(doi + '\n')
+    if len(all_springer_dois) > 0:
+        with open(os.path.join(save_dir, 'springer_dois.txt'), 'w') as f:
+            for doi in all_springer_dois:
+                f.write(doi + '\n')
     print('Finished downloading articles')
 
 
 def download_acs_rsc_from_doi(file_path, save_dir, pdf=False, batch_size=50):
     '''
-    Function to download acs and rsc articles from a file containing rsc or asc dois
+    Function to download acs, rsc and springer articles from a file containing rsc, acs or rsc dois
     '''
     dois = read_doi_file(file_path)
     doi_batches = make_batches(dois, batch_size)

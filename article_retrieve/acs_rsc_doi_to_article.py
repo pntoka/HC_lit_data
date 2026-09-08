@@ -40,6 +40,6 @@ if __name__ == '__main__':
 
     scraper_tools.utils.open_chrome(args.chrome_path, args.chrome_data_dir)
     while True:
-        input("Login to RSC or ACS in the Chrome window and press Enter to continue.")
+        input("Login to RSC, ACS or Springer in the Chrome window and press Enter to continue.")
         break
     scraper_tools.scraper.download_acs_rsc_from_doi(args.doi_file, args.save_dir)
